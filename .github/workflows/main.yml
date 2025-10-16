@@ -9,7 +9,7 @@ on:
 env:
   AWS_REGION: us-east-1                  
   ECR_REPOSITORY: energy-predictor-api   
-  APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-1:540384223356:service/energy_forecaster/40cb9ab75cf844c0a2fe9a8843c603e0
+  APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-1:540384223356:service/energy_forecaster/xxxxxxxxxxxxxxxxxx
 
 jobs:
   build-and-deploy:
