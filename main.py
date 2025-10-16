@@ -1,9 +1,8 @@
 import pandas as pd
 import xgboost as xgb
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
-from typing import List, Dict, Any, Union
+from typing import Dict
 from datetime import date
 
 # Initialize FastAPI app
@@ -41,11 +40,7 @@ class PredictionResponse(BaseModel):
     """Defines the structure for a successful prediction response."""
     predictions: Dict[str, float]
 
-class ErrorResponse(BaseModel):
-    """Defines the structure for an error response."""
-    error: str
-
-# Feature Engineering Functions
+#  Feature Engineering Functions 
 def create_features(df: pd.DataFrame) -> pd.DataFrame:
     """Create time series features from a datetime index."""
     df = df.copy()
@@ -67,14 +62,14 @@ def add_lags(df: pd.DataFrame) -> pd.DataFrame:
     df['lag3'] = (df.index - pd.Timedelta('1092 days')).map(target_map)
     return df
 
-# API Endpoints
+#  API Endpoints 
 @app.get("/", tags=["General"])
 def read_root():
     """Root endpoint providing a welcome message."""
     return {"message": "Welcome to the Energy Consumption Prediction API!"}
 
 @app.post("/predict",
-          response_model=Union[PredictionResponse, ErrorResponse],
+          response_model=PredictionResponse,
           tags=["Prediction"])
 def predict(request: PredictionRequest):
     """
@@ -82,7 +77,7 @@ def predict(request: PredictionRequest):
     The dates should be in 'YYYY-MM-DD' format.
     """
     try:
-        future_dates = pd.date_range(str(request.start_date), str(request.end_date), freq='1h')
+        future_dates = pd.date_range(start=str(request.start_date), end=str(request.end_date) + ' 23:00:00', freq='1h')
         future_df = pd.DataFrame(index=future_dates)
         future_df['isFuture'] = True
 
@@ -98,15 +93,10 @@ def predict(request: PredictionRequest):
 
         predictions = reg_new.predict(future_with_features[FEATURES])
 
-        prediction_results = {str(date): pred for date, pred in zip(future_with_features.index, predictions)}
+        prediction_results = {str(date): float(pred) for date, pred in zip(future_with_features.index, predictions)}
 
         return PredictionResponse(predictions=prediction_results)
-
-    except ValueError:
-        return JSONResponse(
-            status_code=400,
-            content={"error": "Invalid date format. Please use YYYY-MM-DD."}
-        )
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
 
