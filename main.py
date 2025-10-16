@@ -11,11 +11,11 @@ app = FastAPI(title="Energy Consumption Prediction API")
 
 # Model and Data Loading 
 reg_new = xgb.XGBRegressor()
-reg_new.load_model('model.json')
+reg_new.load_model('Model/model.json')
 
 # Load the historical data needed for creating lag features
 try:
-    df_full = pd.read_csv('PJME_hourly.csv')
+    df_full = pd.read_csv('Model/PJME_hourly.csv')
     df_full = df_full.set_index('Datetime')
     df_full.index = pd.to_datetime(df_full.index)
 except FileNotFoundError:
