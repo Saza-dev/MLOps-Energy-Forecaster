@@ -67,11 +67,15 @@ jobs:
     # Deploy to AWS App Runner
     - name: Deploy new image to AWS App Runner
       run: |
-        aws apprunner start-deployment \
+        aws apprunner update-service \
           --service-arn ${{ env.APP_RUNNER_SERVICE_ARN }} \
           --source-configuration '{
             "ImageRepository": {
               "ImageIdentifier": "${{ steps.build-image.outputs.image }}",
+              "ImageConfiguration": {
+                "Port": "8080"
+              },
               "ImageRepositoryType": "ECR"
-            }
+            },
+            "AutoDeploymentsEnabled": true
           }'
