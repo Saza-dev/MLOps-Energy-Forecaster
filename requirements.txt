@@ -3,3 +3,7 @@ numpy
 matplotlib
 seaborn
 xgboost
+fastapi
+pydantic
+uvicorn
+scikit-learn
